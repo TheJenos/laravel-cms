@@ -9,6 +9,15 @@ class CmsModel extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'name',
+        'table_name',
+        'additional_data',
+    ];
+
+    protected $casts = [
+        'additional_data' => 'array',
+    ];
 
     public function columns()
     {

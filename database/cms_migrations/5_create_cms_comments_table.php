@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use App\Models\CMS\Article;
 use Illuminate\Database\Schema\Blueprint;
 
 use Illuminate\Support\Facades\Schema;
@@ -17,9 +16,9 @@ return new class extends Migration
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-			$table->foreignIdFor(Article::class)->constrained('articles');
 			$table->string('title');
 			$table->text('content')->nullable();
+			$table->morphs('commentable');
             $table->timestamps();
         });
     }

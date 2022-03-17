@@ -38,8 +38,10 @@ class CmsInitCommand extends Command
         $migrationCount = DB::table('migrations')->count();
         $baseMigrations = glob('database/migrations/*.php');
         $stepsToRollback = $migrationCount - count($baseMigrations);
-        // Delete the old migrations
-        if ($stepsToRollback > 0) {
+        $migrationCount = count($baseMigrations);
+        
+        // Rollback the old migrations
+        if ($stepsToRollback >= 1) {
             $this->call('migrate:rollback', [
                 '--step' => $stepsToRollback,
             ]);
@@ -49,13 +51,13 @@ class CmsInitCommand extends Command
             unlink($oldMigration);
         }
         $this->newLine();
-
+        
         // Delete the old models
-        $oldModels = glob('app/Models/CMS/*.php');
+        $oldModels = glob('app/Models/CMS/Base/*.php');
         foreach ($oldModels as $oldModel) {
             unlink($oldModel);
         }
-
+        
         $migrationOrder = 0;
 
         // Create a new migration file
@@ -77,7 +79,7 @@ class CmsInitCommand extends Command
             $this->newLine(1);
 
             $this->info("Add columns for {$model->name}");
-            CmsTableHelper::addTableColumn($model->table_name, $model->columns);
+            CmsTableHelper::addTableColumn($migrationOrder, $model->table_name, $model->columns);
             $this->newLine(1);
 
             $mappingTable = $model->columns->filter(fn ($column) => $column->relation && $column->relation['relation'] === 'manyToMany')->values();
@@ -85,7 +87,7 @@ class CmsInitCommand extends Command
                 $this->info("Add pivot table for {$model->name}");
                 foreach ($mappingTable as $column) {
                     $migrationFileName = 'create_cms_' . Str::snake($model->table_name) . '_' . Str::snake(Str::plural($column->relation['model'])) . '_table';
-                    
+
                     $this->call('make:migration', [
                         'name' => $migrationFileName,
                         '--create' => Str::snake($model->table_name) . '_' . Str::snake(Str::plural($column->relation['model'])),
@@ -98,10 +100,11 @@ class CmsInitCommand extends Command
                         return str_contains($file, $migrationFileName);
                     });
                     $migrationFile = array_pop($migrationFile);
-                    rename($migrationFile, 'database/cms_migrations/' . $migrationOrder .'_'. $migrationFileName. '.php');
-                    
+                    rename($migrationFile, 'database/cms_migrations/' . $migrationOrder . '_' . $migrationFileName . '.php');
+
                     $this->info("Add pivot columns for {$model->name}");
                     CmsTableHelper::addTablePivotColumn(
+                        $migrationOrder,
                         Str::snake($model->table_name) . '_' . Str::snake(Str::plural($column->relation['model'])),
                         Str::snake($model->table_name),
                         Str::snake(Str::plural($column->relation['model']))
@@ -111,13 +114,25 @@ class CmsInitCommand extends Command
                 $this->newLine(1);
             }
 
-            $this->info("Creating model for {$model->name}");
+            $this->info("Creating base model for {$model->name}");
             $this->call('make:model', [
-                'name' => 'App\\Models\\CMS\\' . Str::studly($model->name),
+                'name' => 'App\\Models\\CMS\\Base\\' . Str::studly($model->name),
             ]);
             $this->newLine(1);
 
-            $this->info("Add model data for {$model->name}");
+            if (!file_exists(base_path('app/Models/CMS/' . Str::studly($model->name) . '.php'))) {
+                $this->info("Creating model for {$model->name}");
+                $this->call('make:model', [
+                    'name' => 'App\\Models\\CMS\\' . Str::studly($model->name),
+                ]);
+                $this->newLine(1);
+
+                $this->info("extend base model for {$model->name}");
+                CmsModelHelper::extendBaseModel($model->table_name);
+                $this->newLine(1);
+            }
+
+            $this->info("Add base model data for {$model->name}");
             CmsModelHelper::addModelData($model->table_name, $model->columns);
             $this->newLine(1);
         }
@@ -125,7 +140,4 @@ class CmsInitCommand extends Command
         $this->call('migrate');
         return 0;
     }
-
-    
-
 }

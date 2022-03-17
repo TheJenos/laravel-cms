@@ -18,63 +18,76 @@ class DatabaseSeeder extends Seeder
     {
         $tables = [
             'image' => [
-                [
-                    'column' => 'path',
-                    'data_type' => CmsModelColumn::$STRING,
-                ],
+                'columns' => [
+                    [
+                        'column' => 'path',
+                        'data_type' => CmsModelColumn::$STRING,
+                    ],
+                ]
             ],
             'article_category' => [
-                [
-                    'column' => 'name',
-                    'data_type' => CmsModelColumn::$STRING,
-                ],
-                [
-                    'column' => 'image',
-                    'data_type' => CmsModelColumn::$RELATION,
-                    'relation' => [
-                        'model' => 'image',
-                        'relation' => 'manyToMany',
+                'columns' => [
+                    [
+                        'column' => 'name',
+                        'data_type' => CmsModelColumn::$STRING,
                     ],
-                ],
+                    [
+                        'column' => 'image',
+                        'data_type' => CmsModelColumn::$RELATION,
+                        'relation' => [
+                            'model' => 'image',
+                            'relation' => 'manyToMany',
+                        ],
+                    ],
+                ]
             ],
             'article' => [
-                [
-                    'column' => 'article_category',
-                    'data_type' => CmsModelColumn::$RELATION,
-                    'relation' => [
-                        'model' => 'article_category',
-                        'relation' => 'oneToMany',
+                'columns' => [
+                    [
+                        'column' => 'article_category',
+                        'data_type' => CmsModelColumn::$RELATION,
+                        'relation' => [
+                            'model' => 'article_category',
+                            'relation' => 'oneToMany',
+                        ],
                     ],
-                ],
-                [
-                    'column' => 'title',
-                    'data_type' => CmsModelColumn::$STRING,
-                ],
-                [
-                    'column' => 'content',
-                    'data_type' => CmsModelColumn::$TEXT,
-                ],
+                    [
+                        'column' => 'title',
+                        'data_type' => CmsModelColumn::$STRING,
+                    ],
+                    [
+                        'column' => 'content',
+                        'data_type' => CmsModelColumn::$TEXT,
+                    ],
+                ]
             ],
             'comment' => [
-                [
-                    'column' => 'article',
-                    'data_type' => CmsModelColumn::$RELATION,
-                    'relation' => [
-                        'model' => 'article',
-                        'relation' => 'oneToMany',
+                'columns' => [
+                    [
+                        'column' => 'title',
+                        'data_type' => CmsModelColumn::$STRING,
                     ],
-                ],
-                [
-                    'column' => 'title',
-                    'data_type' => CmsModelColumn::$STRING,
-                ],
-                [
-                    'column' => 'content',
-                    'data_type' => CmsModelColumn::$TEXT,
-                    'data_type_params' => [
-                        'nullable' => true,
-                    ]
-                ],
+                    [
+                        'column' => 'content',
+                        'data_type' => CmsModelColumn::$TEXT,
+                        'data_type_params' => [
+                            'nullable' => true,
+                        ]
+                    ],
+                    [
+                        'column' => 'path',
+                        'data_type' => CmsModelColumn::$RELATION,
+                        'relation' => [
+                            'model' => 'commentable',
+                            'models' => ['article', 'image'],
+                            'relation' => 'morph',
+                            'relations' => [
+                                'article' => 'oneToMany',
+                                'image' => 'oneToMany',
+                            ],
+                        ],
+                    ],
+                ]
             ],
         ];
 
@@ -83,9 +96,10 @@ class DatabaseSeeder extends Seeder
             $table =  CmsModel::create([
                 'name' => Str::singular($key),
                 'table_name' => Str::plural($key),
+                'additional_data' => $value['additional_data'] ?? null,
             ]);
 
-            foreach ($value as $column) {
+            foreach ($value['columns'] as $column) {
                 $table->columns()->create($column);
             }
         }

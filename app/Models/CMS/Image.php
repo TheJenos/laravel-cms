@@ -2,17 +2,10 @@
 
 namespace App\Models\CMS;
 
-use App\Models\CMS\ArticleCategory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\CMS\Base\Image as BaseImage;
 
-class Image extends Model
+class Image extends BaseImage
 {
-    protected $fillable = [
-		'path',
-	];
-
-    public function articleCategories()
-    {
-        return $this->belongsToMany(ArticleCategory::class, 'article_categories_images');
-    }
+    use HasFactory;
 }

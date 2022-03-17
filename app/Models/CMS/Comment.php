@@ -2,19 +2,10 @@
 
 namespace App\Models\CMS;
 
-use App\Models\CMS\Article;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\CMS\Base\Comment as BaseComment;
 
-class Comment extends Model
+class Comment extends BaseComment
 {
-    protected $fillable = [
-		'article_id',
-		'title',
-		'content',
-	];
-
-    public function article()
-    {
-        return $this->belongsTo(Article::class);
-    }
+    use HasFactory;
 }

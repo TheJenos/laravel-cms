@@ -1,21 +1,26 @@
 <?php
+
 namespace App\Helper;
 
 use App\Models\CmsModelColumn;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
-class CmsTableHelper {
+class CmsTableHelper
+{
 
-    public static function addTableColumn($tableName, Collection $columns)
+    public static function addTableColumn($order, $tableName, Collection $columns)
     {
-        $migrationFile = array_filter(glob('database/cms_migrations/*.php'), function ($file) use ($tableName) {
-            return str_contains($file, 'create_cms_' . Str::snake($tableName) . '_table');
-        });
-        $migrationFile = array_pop($migrationFile);
-        if (!$migrationFile) {
-            return;
-        }
+        // $migrationFile = array_filter(glob('database/cms_migrations/*.php'), function ($file) use ($tableName) {
+        //     return str_contains($file, 'create_cms_' . Str::snake($tableName) . '_table');
+        // });
+        // $migrationFile = array_pop($migrationFile);
+        // if (!$migrationFile) {
+        //     return;
+        // }
+
+        $migrationFile = 'database/cms_migrations/' . $order . '_create_cms_' . Str::snake($tableName) . '_table.php';
+
         // Read the migration file
         $migrationFileContents = file_get_contents($migrationFile);
         $imports = '';
@@ -26,7 +31,11 @@ class CmsTableHelper {
             $payloadDataType = '';
             switch ($column->data_type) {
                 case CmsModelColumn::$RELATION:
-                    $payloadDataType = 'foreignIdFor';
+                    if ($column->relation['relation'] === 'morph') {
+                        $payloadDataType = 'morphs';
+                    } else {
+                        $payloadDataType = 'foreignIdFor';
+                    }
                     break;
                 case CmsModelColumn::$STRING:
                     $payloadDataType = 'string';
@@ -45,9 +54,13 @@ class CmsTableHelper {
             }
 
             if ($column->data_type == CmsModelColumn::$RELATION) {
-                $tempColumnName = Str::studly($column->relation['model']) . '::class';
-                $suffix .= '->constrained(\'' . Str::plural($column->relation['model']) . '\')';
-                $imports .= 'use App\Models\CMS\\' . Str::studly($column->relation['model']) . ';' . "\n";
+                if ($column->relation['relation'] === 'morph') {
+                    $tempColumnName = "'{$column->relation['model']}'";
+                } else {
+                    $tempColumnName = Str::studly($column->relation['model']) . '::class';
+                    $suffix .= '->constrained(\'' . Str::plural($column->relation['model']) . '\')';
+                    $imports .= 'use App\Models\CMS\\' . Str::studly($column->relation['model']) . ';' . "\n";
+                }
             } else {
                 $tempColumnName = '\'' . $column->column . '\'';
             }
@@ -76,7 +89,7 @@ class CmsTableHelper {
         file_put_contents($migrationFile, $migrationFileContents);
     }
 
-    public static function addTablePivotColumn($tableName, $relation1, $relation2)
+    public static function addTablePivotColumn($order, $tableName, $relation1, $relation2)
     {
         $pluralRelation1 =  Str::plural($relation1);
         $studlySingularRelation1 =  Str::studly(Str::singular($relation1));
@@ -86,13 +99,7 @@ class CmsTableHelper {
         $studlySingularRelation2 =  Str::studly(Str::singular($relation2));
         $snakeSingularRelation2 =  Str::snake(Str::singular($relation2));
 
-        $migrationFile = array_filter(glob('database/cms_migrations/*.php'), function ($file) use ($tableName) {
-            return str_contains($file, 'create_cms_' . Str::snake($tableName) . '_table');
-        });
-        $migrationFile = array_pop($migrationFile);
-        if (!$migrationFile) {
-            return;
-        }
+        $migrationFile = 'database/cms_migrations/' . $order . '_create_cms_' . Str::snake($tableName) . '_table.php';
 
         // Read the migration file
         $migrationFileContents = file_get_contents($migrationFile);
