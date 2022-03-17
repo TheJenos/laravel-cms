@@ -3,7 +3,6 @@
 namespace App\Models\CMS;
 
 use App\Models\CMS\Article;
-
 use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
@@ -14,8 +13,8 @@ class Comment extends Model
 		'content',
 	];
 
-	public function article()
-	{
-		return $this->belongsTo(Article::class);
-	}
+    public function article()
+    {
+        return $this->belongsTo(Article::class);
+    }
 }

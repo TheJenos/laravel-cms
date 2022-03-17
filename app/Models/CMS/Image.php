@@ -3,7 +3,6 @@
 namespace App\Models\CMS;
 
 use App\Models\CMS\ArticleCategory;
-
 use Illuminate\Database\Eloquent\Model;
 
 class Image extends Model
@@ -12,8 +11,8 @@ class Image extends Model
 		'path',
 	];
 
-	public function articleCategories()
-	{
-		return $this->belongsToMany(ArticleCategory::class, 'article_categories_images');
-	}
+    public function articleCategories()
+    {
+        return $this->belongsToMany(ArticleCategory::class, 'article_categories_images');
+    }
 }

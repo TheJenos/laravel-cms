@@ -18,7 +18,7 @@ return new class extends Migration
     {
         Schema::create('article_categories_images', function (Blueprint $table) {
             $table->foreignIdFor(ArticleCategory::class)->constrained('article_categories');
-			$table->foreignIdFor(Image::class)->constrained('images');
+            $table->foreignIdFor(Image::class)->constrained('images');
             $table->primary(['article_category_id', 'image_id']);
         });
     }

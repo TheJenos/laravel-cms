@@ -4,7 +4,6 @@ namespace App\Models\CMS;
 
 use App\Models\CMS\ArticleCategory;
 use App\Models\CMS\Comment;
-
 use Illuminate\Database\Eloquent\Model;
 
 class Article extends Model
@@ -15,13 +14,13 @@ class Article extends Model
 		'content',
 	];
 
-	public function articleCategory()
-	{
-		return $this->belongsTo(ArticleCategory::class);
-	}
+    public function articleCategory()
+    {
+        return $this->belongsTo(ArticleCategory::class);
+    }
 
-	public function comments()
-	{
-		return $this->hasMany(Comment::class);
-	}
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }
