@@ -23,6 +23,10 @@ class DatabaseSeeder extends Seeder
                         'column' => 'path',
                         'data_type' => CmsModelColumn::$STRING,
                     ],
+                    [
+                        'column' => 'delete_path',
+                        'data_type' => CmsModelColumn::$STRING,
+                    ],
                 ]
             ],
             'article_category' => [
@@ -75,7 +79,7 @@ class DatabaseSeeder extends Seeder
                         ]
                     ],
                     [
-                        'column' => 'path',
+                        'column' => 'commentable',
                         'data_type' => CmsModelColumn::$RELATION,
                         'relation' => [
                             'model' => 'commentable',
@@ -93,6 +97,7 @@ class DatabaseSeeder extends Seeder
 
 
         foreach ($tables as $key => $value) {
+            /** @var CmsModel */
             $table =  CmsModel::create([
                 'name' => Str::singular($key),
                 'table_name' => Str::plural($key),
@@ -100,8 +105,26 @@ class DatabaseSeeder extends Seeder
             ]);
 
             foreach ($value['columns'] as $column) {
-                $table->columns()->create($column);
+                CmsModelColumn::withoutEvents(function () use ($table, $column) {
+                    $table->columns()->create($column);
+                });
             }
         }
+
+        /** @var CmsModel */
+        $imageModel = CmsModel::whereName('image')->firstOrFail();
+
+        $imageModel->columns()->create([
+            'column' => 'new_path',
+            'data_type' => CmsModelColumn::$STRING,
+        ]);
+
+        $imageModel->columns()->where('column','path')->first()->update([
+            'data_type_params' => [
+                'nullable' => true,
+            ],
+        ]);
+
+        $imageModel->columns()->where('column','delete_path')->first()->delete();
     }
 }

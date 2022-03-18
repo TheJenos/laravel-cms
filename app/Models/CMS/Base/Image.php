@@ -10,6 +10,7 @@ class Image extends Model
 {
     protected $fillable = [
 		'path',
+		'new_path',
 	];
 
     public function articleCategories()

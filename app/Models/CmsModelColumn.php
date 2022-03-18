@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class CmsModelColumn extends Model
@@ -11,8 +10,6 @@ class CmsModelColumn extends Model
     public static int $STRING = 1;
     public static int $INTEGER = 2;
     public static int $TEXT = 3;
-
-    use HasFactory;
 
     protected $casts = [
         'data_type_params' => 'array',
@@ -25,6 +22,37 @@ class CmsModelColumn extends Model
         'data_type_params',
         'relation',
     ];
+
+    public static function boot() {
+        parent::boot();
+
+        self::creating(function (CmsModelColumn $model) {
+            $model->model->changes()->updateOrCreate([
+                'column' => $model->column,
+            ], [
+                'old_data' => null,
+                'new_data' => $model->getAttributes(),
+            ]);
+        });
+
+        self::updating(function (CmsModelColumn $model) {
+            $model->model->changes()->updateOrCreate([
+                'column' => $model->column,
+            ], [
+                'old_data' => $model->getRawOriginal(),
+                'new_data' => $model->getAttributes(),
+            ]);
+        });
+
+        self::deleting(function (CmsModelColumn $model) {
+            $model->model->changes()->updateOrCreate([
+                'column' => $model->column,
+            ], [
+                'old_data' => $model->getRawOriginal(),
+                'new_data' => null,
+            ]);
+        });
+    }
 
     public function model()
     {

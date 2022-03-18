@@ -74,7 +74,7 @@ class CmsInitCommand extends Command
                 return str_contains($file, 'create_cms_' . Str::snake($model->table_name) . '_table');
             });
             $migrationFile = array_pop($migrationFile);
-            rename($migrationFile, 'database/cms_migrations/' . $migrationOrder . '_create_cms_' . Str::snake($model->table_name) . '_table.php');
+            rename($migrationFile, 'database/cms_migrations/cms_' . $migrationOrder . '_create_cms_' . Str::snake($model->table_name) . '_table.php');
 
             $this->newLine(1);
 
@@ -100,7 +100,7 @@ class CmsInitCommand extends Command
                         return str_contains($file, $migrationFileName);
                     });
                     $migrationFile = array_pop($migrationFile);
-                    rename($migrationFile, 'database/cms_migrations/' . $migrationOrder . '_' . $migrationFileName . '.php');
+                    rename($migrationFile, 'database/cms_migrations/cms_' . $migrationOrder . '_' . $migrationFileName . '.php');
 
                     $this->info("Add pivot columns for {$model->name}");
                     CmsTableHelper::addTablePivotColumn(

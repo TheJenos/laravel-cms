@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class CmsModel extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'name',
         'table_name',
@@ -22,5 +19,10 @@ class CmsModel extends Model
     public function columns()
     {
         return $this->hasMany(CmsModelColumn::class);
+    }
+
+    public function changes()
+    {
+        return $this->hasMany(CmsModelChanges::class);
     }
 }
